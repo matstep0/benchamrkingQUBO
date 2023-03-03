@@ -2,19 +2,46 @@
 import numpy as np
 import random
 
-#Generate triangle matrix (n) with density parameter d (0,1).
-n = 20 #size of array
-d = 0.7
+class  Problem_Generator:
+    """This class generate problem desinged to be solved by QUBO.
+    Matrix A and vector b and binary vector x can be generated, so Ax=b where x is binary vector. 
+    Than  vector x is exact solution and sum_i (A_ij x_j -b_j)^2 is then minimized.
+    """
+    def __init__(self,size,density):
+        self.size=size
+        self.density=density
+        self.A=None      
+        self.b=None
+        self.x=None    
+        
+    def __gen_A(self):
+        "Generate random instance of traingle matrix with given density"
+        temp_mat = np.tril(np.random.rand(self.size,self.size))
+        x,y = np.nonzero(temp_mat)
+        ind = list(zip(x,y))
+        ind = random.choices(ind, k = int((1-self.density)*len(ind))) 
+        for (i,j) in ind:
+            temp_mat[i,j] = 0   #poprawić
+        return temp_mat
+    
+    def __gen_x(self): 
+        #Getting exact solution to minimizing problem
+        return np.random.randint(2,size=(self.size,1))
 
-def random_tril_matrix(n, d):
-    matrix = np.tril(numpy.random.rand(n,n))
-    x,y = np.nonzero(matrix)
-    ind = list(zip(x,y))
-    ind = random.choices(ind, k = int((1-d)*len(ind))) 
-    for (i,j) in ind:
-        matrix[i,j] = 0
-    return matrix
+    def __gen_b(self):
+        #Gettin b based on generated A and x b=Ax
+        return np.matmul(self.A,self.x)    
+    
+    def generate_problem(self):
+        self.A=self.__gen_A()
+        self.x=self.__gen_x()
+        self.b=self.__gen_b()
+        return
 
+    
+
+x=Problem_Generator(20,0.7)
+x.generate_problem()
 
 def random_qubo():
 
