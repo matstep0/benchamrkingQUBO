@@ -15,7 +15,7 @@ class  Problem_Generator:
         self.A=None      
         self.b=None
         self.x=None    
-        self.H=None
+        self.H=0
         
     def __gen_A(self):
         "Generate random instance of traingle matrix with given density"
@@ -44,12 +44,9 @@ class  Problem_Generator:
     def Ising_Hamiltonian(self):
         from pyqubo import Spin
         self.spins=np.array([Spin(str(i)) for i in range(1,self.size+1)] )
-        
-        for line in self.A:
-            print(self.spins)
-            print(self.A[0])
-            self.H+=(np.multiply(line,self.spins))**2
-            
+        self.H=0
+        for line, bi in zip(self.A, self.b):
+            self.H+=(np.multiply(line,self.spins)-bi)**2
         return self.H
 
 
@@ -57,8 +54,8 @@ class  Problem_Generator:
 
 x=Problem_Generator(20,0.7)
 x.generate_problem()
-print(x.Ising_Hamiltonian())
-
+H=x.Ising_Hamiltonian() ##H wychodzi jako tablica z jednym elementem...
+print(H)
 def random_qubo():
 
     # Generating model with parameters so QUBO problem with matrix Mij
