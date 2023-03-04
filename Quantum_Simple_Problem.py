@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 import numpy as np
 import random
+import pyqubo
+
 
 class  Problem_Generator:
     """This class generate problem desinged to be solved by QUBO.
@@ -13,6 +15,7 @@ class  Problem_Generator:
         self.A=None      
         self.b=None
         self.x=None    
+        self.H=None
         
     def __gen_A(self):
         "Generate random instance of traingle matrix with given density"
@@ -38,10 +41,23 @@ class  Problem_Generator:
         self.b=self.__gen_b()
         return
 
-    
+    def Ising_Hamiltonian(self):
+        from pyqubo import Spin
+        self.spins=np.array([Spin(str(i)) for i in range(1,self.size+1)] )
+        
+        for line in self.A:
+            print(self.spins)
+            print(self.A[0])
+            self.H+=(np.multiply(line,self.spins))**2
+            
+        return self.H
+
+
+
 
 x=Problem_Generator(20,0.7)
 x.generate_problem()
+print(x.Ising_Hamiltonian())
 
 def random_qubo():
 
