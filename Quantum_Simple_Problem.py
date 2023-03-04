@@ -30,11 +30,29 @@ class  Problem_Generator:
     def __gen_x(self): 
         #Getting exact solution to minimizing problem
         return np.random.randint(2,size=(self.size,1))
+    
+    def get_A(self):
+        return self.A
+    
+    def get_x(self):
+        return self.x
+    
+    def get_b(self):
+        return self.b
 
     def __gen_b(self):
         #Gettin b based on generated A and x b=Ax
         return np.matmul(self.A,self.x)    
+
+    def get_A(self):
+        return self.A
     
+    def get_x(self):
+        return self.x
+    
+    def get_b(self):
+        return self.b
+
     def generate_problem(self):
         self.A=self.__gen_A()
         self.x=self.__gen_x()
@@ -42,20 +60,39 @@ class  Problem_Generator:
         return
 
     def Ising_Hamiltonian(self):
-        from pyqubo import Spin
-        self.spins=np.array([Spin(str(i)) for i in range(1,self.size+1)] )
+        from pyqubo import Binary
+        self.binar=np.array([Binary("x"+str(i)) for i in range(1,self.size+1)] )
         self.H=0
         for line, bi in zip(self.A, self.b):
-            self.H+=(np.multiply(line,self.spins)-bi)**2
+            self.H+=(np.sum(np.multiply(line,self.binar))-bi)**2
+            #print(line)
+            #print(self.binar)
+            #print(np.multiply(line,self.binar))
         return self.H
+    
+    def compile(self):
+        self.H=self.H.compile()
+        return        
+    
+    def to_qubo(self):
+       return self.H.to_qubo()
+    
+
+       
 
 
 
-
-x=Problem_Generator(20,0.7)
+x=Problem_Generator(3,0.4)
 x.generate_problem()
-H=x.Ising_Hamiltonian() ##H wychodzi jako tablica z jednym elementem...
-print(H)
+x.Ising_Hamiltonian() ##H wychodzi jako tablica z jednym elementem...
+x.compile()
+qubo, offset = x.to_qubo()
+print(qubo)
+
+#qubo, offset = model.to_qubo()
+#print(qubo)
+
+
 def random_qubo():
 
     # Generating model with parameters so QUBO problem with matrix Mij
