@@ -2,6 +2,7 @@
 import numpy as np
 import random
 import pyqubo
+import neal
 
 
 class  Problem_Generator:
@@ -52,6 +53,9 @@ class  Problem_Generator:
     
     def get_b(self):
         return self.b
+    
+    def solution(self):
+        return np.ndarray.flatten(self.x)
 
     def generate_problem(self):
         self.A=self.__gen_A()
@@ -60,6 +64,7 @@ class  Problem_Generator:
         return
 
     def Ising_Hamiltonian(self):
+        """Generate and return Hamiltonian"""
         from pyqubo import Binary
         self.binar=np.array([Binary("x"+str(i)) for i in range(1,self.size+1)] )
         self.H=0
@@ -77,10 +82,16 @@ class  Problem_Generator:
     def to_qubo(self):
        return self.H.to_qubo()
     
+    def anneal(self):
+        sampler = neal.SimulatedAnnealingSampler()
+        bqm = self.H.to_bqm()
+        sampleset = sampler.sample(bqm, num_reads=10)
+        decoded_samples = self.H.decode_sampleset(sampleset)
+        best_sample = min(decoded_samples, key=lambda x: x.energy)
+        return best_sample.sample 
+     
 
        
-
-
 
 x=Problem_Generator(3,0.4)
 x.generate_problem()
@@ -88,6 +99,8 @@ x.Ising_Hamiltonian() ##H wychodzi jako tablica z jednym elementem...
 x.compile()
 qubo, offset = x.to_qubo()
 print(qubo)
+print(x.anneal())
+print(x.solution())
 
 #qubo, offset = model.to_qubo()
 #print(qubo)
@@ -106,12 +119,4 @@ def random_qubo():
     qubo, offset = model.to_qubo()
 
     return qubo, offset
-
-def anneal():
-    sampler = neal.SimulatedAnnealingSampler()
-    bqm = model.to_bqm()
-    sampleset = sampler.sample(bqm, num_reads=10)
-    decoded_samples = model.decode_sampleset(sampleset)
-    best_sample = min(decoded_samples, key=lambda x: x.energy)
-    print(best_sample.sample) 
 
