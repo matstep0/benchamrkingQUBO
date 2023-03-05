@@ -130,9 +130,39 @@ class  Problem_Generator:
         #print(np.matmul(self.get_A(),t.transpose()) - self.get_b().flatten() ) 
         return np.sum((np.matmul(self.get_A(),t.transpose()) - self.get_b().flatten())**2)
 
+"""Code for checking performance of code"""
+import time
 
-"""Execution code for testing"""
+def calculate_execution_time(res,sizes,densities):
+    for s in sizes:
+        for den in densities:
+            start = time.process_time()
+            Problem_Generator(s,den).generate_problem()    
+            end=time.process_time()
+            res[s,den]=round(end-start,4)
+    return res
+def pretty_print(dic,sizes,densities):
+    print("x    ",end=' ')
+    for den in densities:
+        print(den,end='    ')
+    print()
+    for s in sizes:
+        print(s,end=' ')
+        for den in densities:
+            print(dic[s,den],end=' ')
+        print()
+def save_result():
+    print("TU bedize funkcja")
 
+sizes=[10,20,30,40,50]
+densities=[ 0.2,0.4,0.6,0.8,1]
+dic={}
+dic=calculate_execution_time(dic,sizes,densities)
+pretty_print(dic,sizes,densities)
+
+
+"""Execution code validity for testing"""
+"""
 x=Problem_Generator(4,0.8) #create class parameters size-20 density=0.8
 x.generate_problem()       #sample problem Ax=b
 print(x.get_A(),x.get_x(),x.get_b())
@@ -149,6 +179,7 @@ error_planted=x.cost(planted_solution)         #calculate square error
 error_generated=x.cost(generated_solution)
 print(error_planted)
 print(error_generated)
+"""
 
 """
 def random_qubo():
