@@ -7,10 +7,17 @@ import neal
 
 class  Problem_Generator:
     """This class generate problem desinged to be solved by QUBO.
-    Matrix A and vector b and binary vector x can be generated, so Ax=b where x is binary vector. 
+    Square matrix A and vector b and binary vector x can be generated, 
+    so Ax=b where x is binary vector. 
+    Random A traingle matrix with given density d (0,1) and random binary array x
+    are generated and than b is calculated as b=Ax
     Than  vector x is exact solution and sum_i (A_ij x_j -b_j)^2 is then minimized.
+    
+    Args: 
+        size: size of square matrix 
+        density: density of matrix A that will be sampled
     """
-    def __init__(self,size,density):
+    def __init__(self,size,density=1):
         self.size=size
         self.density=density
         self.A=None      
@@ -30,11 +37,11 @@ class  Problem_Generator:
         return temp_mat
     
     def __gen_x(self): 
-        #Getting exact solution to minimizing problem
+        """Generate solution for problem"""
         return np.random.randint(2,size=(self.size,1))
     
     def __gen_b(self):
-        #Gettin b based on generated A and x b=Ax
+        """Calculating b based on generated A and x, b=Ax"""
         return np.matmul(self.A,self.x)    
 
     def get_A(self):
@@ -47,13 +54,20 @@ class  Problem_Generator:
         return self.b
     
     def generate_problem(self):
+        """Generate problem. A set of equation written in matrix form Ax=b
+        
+        Return: 
+           ::class:: 'numpy.matrix' """
+           
         self.A=self.__gen_A()
         self.x=self.__gen_x()
         self.b=self.__gen_b()
         return
 
-    def Ising_Hamiltonian(self):
-        """Generate and return Hamiltonian"""
+    def Binary_Hamiltonian(self):
+        """Generate Hamiltonian in with binary varables.
+        Return:
+            <class 'cpp_pyqubo.Add'>"""
         from pyqubo import Binary
         self.binar=np.array([Binary("x"+str(i)) for i in range(1,self.size+1)] )
         self.H=0
@@ -65,29 +79,36 @@ class  Problem_Generator:
         return self.H
     
     def compile(self):
+        """Compile Hamiltonian"""
         self.H=self.H.compile()
-        return        
+        return self.H      
     
     def to_qubo(self):
-       return self.H.to_qubo()
-    
+        """Calculate and return QUBO model coefficiencts and offset"""
+        return self.H.to_qubo()
     def anneal(self):
+        """Simulate algorith of quantum annealing from deave-neal package 
+        Return:
+            Python dictionary as solution, 
+            use method solution to extract it to binary array"""
         sampler = neal.SimulatedAnnealingSampler()
         bqm = self.H.to_bqm()
-        sampleset = sampler.sample(bqm, num_reads=10)
+        sampleset = sampler.sample(bqm, num_reads=1)
         decoded_samples = self.H.decode_sampleset(sampleset)
         best_sample = min(decoded_samples, key=lambda x: x.energy)
         self.gen_sol=best_sample.sample 
         return self.gen_sol
     
     def solution(self):
-        """Gives generated solution as list"""
+        """Gives calculated solution as numpy array
+        Return:
+            class:numpy.array"""
         res=[]
         for i in range(1,self.size+1):
             res.append(self.gen_sol['x'+str(i)])
         return np.array(res) 
     
-    def real_solution(self):
+    def exact_solution(self):
         """Give solution as 1-dim numpy array"""
         return np.ndarray.flatten(self.x)
     def cost(self,t):
@@ -103,16 +124,17 @@ class  Problem_Generator:
 
 """Execution code for testing"""
 
-x=Problem_Generator(20,0.4)
-x.generate_problem()
-x.Ising_Hamiltonian()
-x.compile()
-qubo, offset = x.to_qubo()
-#print(qubo)
-planted_solution=x.real_solution()
-x.anneal()
-generated_solution=x.solution()
-print(planted_solution)
+x=Problem_Generator(4,0.8) #create class parameters size-20 density=0.8
+x.generate_problem()       #sample problem Ax=b
+print(x.get_A(),x.get_x(),x.get_b())
+x.Binary_Hamiltonian()     #create hamiltonianian for generated problem
+x.compile()             #compile model
+qubo, offset = x.to_qubo() #get QUBO problem 
+print(qubo)
+planted_solution=x.exact_solution()
+x.anneal()             # run simulated annealing to obtain solution 
+generated_solution=x.solution() #get this calculated solution as numpy array
+print(planted_solution) 
 print(generated_solution)
 
 
@@ -122,10 +144,6 @@ error_generated=x.cost(generated_solution)
 print(error_planted)
 print(error_generated)
 
-error_planted=np.sum((np.matmul(x.get_A(),x.get_x()) - x.get_b())**2)    #square error
-error_generated=np.sum((np.matmul(x.get_A(),generated_solution.transpose()) - x.get_b().flatten())**2)
-print(error_planted)
-print(error_generated)
 #qubo, offset = model.to_qubo()
 #print(qubo)
 
