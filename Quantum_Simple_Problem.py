@@ -123,7 +123,7 @@ class  Problem_Generator:
 
 
 """Execution code for testing"""
-
+"""
 x=Problem_Generator(4,0.8) #create class parameters size-20 density=0.8
 x.generate_problem()       #sample problem Ax=b
 print(x.get_A(),x.get_x(),x.get_b())
@@ -131,23 +131,17 @@ x.Binary_Hamiltonian()     #create hamiltonianian for generated problem
 x.compile()             #compile model
 qubo, offset = x.to_qubo() #get QUBO problem 
 print(qubo)
-planted_solution=x.exact_solution()
+planted_solution=x.exact_solution()  #get solution as numpy array
 x.anneal()             # run simulated annealing to obtain solution 
 generated_solution=x.solution() #get this calculated solution as numpy array
 print(planted_solution) 
 print(generated_solution)
-
-
-error_planted=x.cost(planted_solution)
+error_planted=x.cost(planted_solution)         #calculate square error
 error_generated=x.cost(generated_solution)
-
 print(error_planted)
 print(error_generated)
-
-#qubo, offset = model.to_qubo()
-#print(qubo)
-
-
+"""
+"""
 def random_qubo():
 
     # Generating model with parameters so QUBO problem with matrix Mij
@@ -162,3 +156,4 @@ def random_qubo():
 
     return qubo, offset
 
+"""
