@@ -47,7 +47,13 @@ class  Problem_Generator:
     
     def __gen_b(self):
         """Calculating b based on generated A and x, b=Ax"""
-        return self.A.multiply(self.x)    
+        #print(self.A.get_shape())
+        #print(self.A)
+        #print(self.x.get_shape())
+        #print("x:" , self.x)
+        #print(self.A @ self.x)   
+        #print((self.A @ self.x).get_shape() )
+        return self.A @ self.x
 
     def get_A(self):
         return self.A
@@ -74,10 +80,24 @@ class  Problem_Generator:
         Return:
             <class 'cpp_pyqubo.Add'>"""
         from pyqubo import Binary
-        self.binar=np.array([Binary("x"+str(i)) for i in range(1,self.size+1)] )
-        self.H=0
-        for line, bi in zip(self.A, self.b):
-            self.H+=(np.sum(np.multiply(line,self.binar))-bi)**2
+        self.binar=sparse.coo_matrix(np.array([Binary("x"+str(i)) 
+                                               for i in range(1,self.size+1)] ))
+        print("A:",self.A,"b:",self.binar)
+        print(type(self.A),type(self.binar))
+        print(self.A.get_shape())
+        #self.binar=self.binar.transpose() ##reutrn warning that type is unsuported
+        a=np.array(self.A.getrow(1)).flatten()
+        print()
+        b=np.array(self.binar)
+        a*b
+        raise
+        b=self.binar.transpose()
+        a*b
+        #no i tutaj dupa bo się da mnożyć jak są liczby ale nie jak spiny
+        print()
+        self.H=self.A @ self.binar
+        #self.H=self.A @ self.binar.transpose()
+        print(self.H)
             #print(line)
             #print(self.binar)
             #print(np.multiply(line,self.binar))
@@ -150,17 +170,17 @@ def pretty_print(dic,sizes,densities):
         print()
 def save_result():
     print("TU bedize funkcja")
-
-sizes=[10,20,30,40,50]
+"""
+sizes=[1000,2000,3000,4000,5000]
 densities=[ 0.2,0.4,0.6,0.8,1]
 dic={}
 dic=calculate_execution_time(dic,sizes,densities)
 pretty_print(dic,sizes,densities)
-
+"""
 
 """Execution code validity for testing"""
-"""
-x=Problem_Generator(4,0.8) #create class parameters size-20 density=0.8
+
+x=Problem_Generator(3,0.8) #create class parameters size-20 density=0.8
 x.generate_problem()       #sample problem Ax=b
 print(x.get_A(),x.get_x(),x.get_b())
 x.Binary_Hamiltonian()     #create hamiltonianian for generated problem
@@ -176,7 +196,7 @@ error_planted=x.cost(planted_solution)         #calculate square error
 error_generated=x.cost(generated_solution)
 print(error_planted)
 print(error_generated)
-"""
+
 
 """
 def random_qubo():
