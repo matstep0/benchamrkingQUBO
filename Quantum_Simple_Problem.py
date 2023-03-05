@@ -10,7 +10,7 @@ import numpy as np
 import random
 import pyqubo
 import neal
-
+from scipy import sparse
 
 class  Problem_Generator:
     """This class generate problem desinged to be solved by QUBO.
@@ -36,21 +36,18 @@ class  Problem_Generator:
         self.offset=None
     def __gen_A(self):
         "Generate random instance of traingle matrix with given density"
-        temp_mat = np.tril(np.random.rand(self.size,self.size))
-        x,y = np.nonzero(temp_mat)
-        ind = list(zip(x,y))
-        ind = random.choices(ind, k = int((1-self.density)*len(ind))) 
-        for (i,j) in ind:
-            temp_mat[i,j] = 0   #poprawić
-        return temp_mat
+        self.A=sparse.random(self.size,self.size,density=self.density)
+        self.A=sparse.tril(self.A)
+        return self.A
+
     
     def __gen_x(self): 
         """Generate solution for problem"""
-        return np.random.randint(2,size=(self.size,1))
+        return sparse.csr_matrix(np.random.randint(2,size=(self.size,1)))
     
     def __gen_b(self):
         """Calculating b based on generated A and x, b=Ax"""
-        return np.matmul(self.A,self.x)    
+        return self.A.multiply(self.x)    
 
     def get_A(self):
         return self.A
