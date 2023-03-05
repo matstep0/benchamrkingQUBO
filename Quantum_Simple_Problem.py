@@ -1,3 +1,10 @@
+#TODOLIST
+#seed do losowania
+#funckja extract problem która wczytuje problem do pliku
+#funckja read problem która wczytuje problem z pliku
+# przepisać na sparce matrix
+
+
 #!/usr/bin/env python
 import numpy as np
 import random
@@ -25,7 +32,8 @@ class  Problem_Generator:
         self.x=None    
         self.H=0
         self.gen_sol=None
-        
+        self.qubo=None
+        self.offset=None
     def __gen_A(self):
         "Generate random instance of traingle matrix with given density"
         temp_mat = np.tril(np.random.rand(self.size,self.size))
@@ -62,7 +70,7 @@ class  Problem_Generator:
         self.A=self.__gen_A()
         self.x=self.__gen_x()
         self.b=self.__gen_b()
-        return
+        return self.A,self.x,self.b
 
     def Binary_Hamiltonian(self):
         """Generate Hamiltonian in with binary varables.
@@ -85,7 +93,8 @@ class  Problem_Generator:
     
     def to_qubo(self):
         """Calculate and return QUBO model coefficiencts and offset"""
-        return self.H.to_qubo()
+        self.qubo , self.offset= self.H.to_qubo()
+        return self.qubo, self.offset
     def anneal(self):
         """Simulate algorith of quantum annealing from deave-neal package 
         Return:
@@ -123,7 +132,7 @@ class  Problem_Generator:
 
 
 """Execution code for testing"""
-"""
+
 x=Problem_Generator(4,0.8) #create class parameters size-20 density=0.8
 x.generate_problem()       #sample problem Ax=b
 print(x.get_A(),x.get_x(),x.get_b())
@@ -140,7 +149,7 @@ error_planted=x.cost(planted_solution)         #calculate square error
 error_generated=x.cost(generated_solution)
 print(error_planted)
 print(error_generated)
-"""
+
 """
 def random_qubo():
 
