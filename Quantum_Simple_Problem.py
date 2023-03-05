@@ -82,7 +82,6 @@ class  Problem_Generator:
     
     def solution(self):
         """Gives generated solution as list"""
-        print(type(self.gen_sol))
         res=[]
         for i in range(1,self.size+1):
             res.append(self.gen_sol['x'+str(i)])
@@ -91,17 +90,25 @@ class  Problem_Generator:
     def real_solution(self):
         """Give solution as 1-dim numpy array"""
         return np.ndarray.flatten(self.x)
-    
- 
+    def cost(self,t):
+        """Claculate square error of given solution.
+        solution must by in numpy array form"""
+        #print(self.get_A())
+        #print(t.transpose())
+        #print(np.matmul(self.get_A(),t.transpose()))
+        #print(self.get_b())
+        #print(np.matmul(self.get_A(),t.transpose()) - self.get_b().flatten() ) 
+        return np.sum((np.matmul(self.get_A(),t.transpose()) - self.get_b().flatten())**2)
+
 
 """Execution code for testing"""
 
-x=Problem_Generator(3,0.4)
+x=Problem_Generator(20,0.4)
 x.generate_problem()
-x.Ising_Hamiltonian() ##H wychodzi jako tablica z jednym elementem...
+x.Ising_Hamiltonian()
 x.compile()
 qubo, offset = x.to_qubo()
-print(qubo)
+#print(qubo)
 planted_solution=x.real_solution()
 x.anneal()
 generated_solution=x.solution()
@@ -109,12 +116,16 @@ print(planted_solution)
 print(generated_solution)
 
 
-error_planted=np.sum((np.matmul(x.get_A(),x.get_x()) - x.get_b())**2)    #square error
-error_generated=np.sum((np.matmul(x.get_A(),generated_solution.transpose()) - x.get_b())**2)
+error_planted=x.cost(planted_solution)
+error_generated=x.cost(generated_solution)
 
 print(error_planted)
 print(error_generated)
 
+error_planted=np.sum((np.matmul(x.get_A(),x.get_x()) - x.get_b())**2)    #square error
+error_generated=np.sum((np.matmul(x.get_A(),generated_solution.transpose()) - x.get_b().flatten())**2)
+print(error_planted)
+print(error_generated)
 #qubo, offset = model.to_qubo()
 #print(qubo)
 
